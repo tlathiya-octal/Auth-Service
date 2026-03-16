@@ -32,10 +32,10 @@ app:
       base-url: ${USER_SERVICE_URL:http://localhost:8082}
 
 jwt:
-  issuer: ${JWT_ISSUER:auth-service}
-  secret: ${JWT_SECRET:CHANGE_ME_SUPER_SECRET_KEY_32_CHARS_MIN}
-  access-token-expiration-minutes: ${JWT_ACCESS_MINUTES:15}
-  refresh-token-expiration-days: ${JWT_REFRESH_DAYS:7}
+  issuer: ecommerce-auth-service
+  secret: mySuperSecretJwtKey12345678901234567890
+  access-token-expiration-minutes: 15
+  refresh-token-expiration-days: 7
 
 logging:
   level:

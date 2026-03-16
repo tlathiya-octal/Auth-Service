@@ -45,19 +45,21 @@ public class RefreshTokenService {
     }
 
     public RefreshToken rotateRefreshToken(String token) {
-        String userIdStr = redisTemplate.opsForValue().get(key(token));
+        String redisKey = key(token);
+
+        String userIdStr = redisTemplate.opsForValue().get(redisKey);
+
         if (userIdStr == null) {
             throw new AuthException(HttpStatus.UNAUTHORIZED, "Invalid or expired refresh token");
         }
 
         UUID userId = UUID.fromString(userIdStr);
+
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new AuthException(HttpStatus.UNAUTHORIZED, "User not found for token"));
+                .orElseThrow(() -> new AuthException(HttpStatus.UNAUTHORIZED, "User not found"));
 
-        // Revoke old token
-        redisTemplate.delete(key(token));
+        redisTemplate.delete(redisKey);
 
-        // Create new token for same user
         return createRefreshToken(user);
     }
 
