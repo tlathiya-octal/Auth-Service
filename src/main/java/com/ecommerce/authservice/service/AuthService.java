@@ -1,7 +1,6 @@
 package com.ecommerce.authservice.service;
 
 import com.ecommerce.authservice.client.UserServiceClient;
-import com.ecommerce.authservice.config.KafkaTopicsProperties;
 import com.ecommerce.authservice.dto.*;
 import com.ecommerce.authservice.entity.*;
 import com.ecommerce.authservice.event.EventPublisher;
@@ -9,8 +8,8 @@ import com.ecommerce.authservice.exception.AuthException;
 import com.ecommerce.authservice.repository.RoleRepository;
 import com.ecommerce.authservice.repository.UserRepository;
 import com.ecommerce.authservice.repository.UserRoleRepository;
-import com.ecommerce.events.LoginEvent;
-import com.ecommerce.events.UserCreatedEvent;
+//import com.ecommerce.events.LoginEvent;
+//import com.ecommerce.events.UserCreatedEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -38,7 +37,6 @@ public class AuthService {
     private final LoginAttemptService loginAttemptService;
     private final JwtBlacklistService jwtBlacklistService;
     private final EventPublisher eventPublisher;          // no-op in REST mode
-    private final KafkaTopicsProperties kafkaTopicsProperties;
     private final UserServiceClient userServiceClient;   // REST-mode: sync profile creation
 
     @Transactional
@@ -93,17 +91,17 @@ public class AuthService {
         );
         userServiceClient.createUserProfile(profileRequest);
 
-        // ── Kafka no-op (preserved for easy re-enable) ───────────────────────────
-        UserCreatedEvent event = new UserCreatedEvent(
-                savedUser.getId(),
-                savedUser.getEmail(),
-                savedUser.getPhone(),
-                request.getFirstName(),
-                request.getLastName(),
-                requestedRole.name(),
-                savedUser.getCreatedAt()
-        );
-        eventPublisher.publishAfterCommit(kafkaTopicsProperties.getUserCreated(), event);
+//        // ── Kafka no-op (preserved for easy re-enable) ───────────────────────────
+//        UserCreatedEvent event = new UserCreatedEvent(
+//                savedUser.getId(),
+//                savedUser.getEmail(),
+//                savedUser.getPhone(),
+//                request.getFirstName(),
+//                request.getLastName(),
+//                requestedRole.name(),
+//                savedUser.getCreatedAt()
+//        );
+//        eventPublisher.publishAfterCommit(kafkaTopicsProperties.getUserCreated(), event);
 
         log.info("Registered user with email={}", savedUser.getEmail());
         return RegisterResponse.builder()
@@ -140,8 +138,8 @@ public class AuthService {
         String refreshToken = refreshTokenEntity.getToken();
         loginAttemptService.loginSucceeded(normalizedEmail);
 
-        LoginEvent loginEvent = new LoginEvent(user.getId(), user.getEmail(), Instant.now());
-        eventPublisher.publish(kafkaTopicsProperties.getUserLogin(), loginEvent);
+//        LoginEvent loginEvent = new LoginEvent(user.getId(), user.getEmail(), Instant.now());
+//        eventPublisher.publish(kafkaTopicsProperties.getUserLogin(), loginEvent);
 
         log.info("User logged in email={}", user.getEmail());
         return AuthResponse.builder()
