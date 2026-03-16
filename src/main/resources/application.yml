@@ -34,6 +34,9 @@ spring:
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
     admin:
       auto-create: true
+    # REST-mode: prevent Kafka listener threads from starting when broker is unavailable
+    listener:
+      auto-startup: false
 
 app:
   kafka:
@@ -53,6 +56,11 @@ app:
       user-created: USER_CREATED
       user-login: user.login
 
+  # REST-mode: URL used by UserServiceClient for synchronous profile creation calls
+  services:
+    user-service:
+      base-url: ${USER_SERVICE_URL:http://localhost:8082}
+
 jwt:
   issuer: ${JWT_ISSUER:auth-service}
   secret: ${JWT_SECRET:CHANGE_ME_SUPER_SECRET_KEY_32_CHARS_MIN}
@@ -63,3 +71,9 @@ logging:
   level:
     root: INFO
     com.ecommerce.authservice: DEBUG
+    org.springframework.security: WARN
+    org.hibernate.orm.jdbc.bind: WARN
+    com.netflix: WARN
+    io.micrometer: WARN
+  # logback-spring.xml handles pattern and file rolling
+  # Set LOG_FILE env var to override log directory (default: ./logs/auth-service.log)

@@ -1,56 +1,39 @@
 package com.ecommerce.authservice.event;
 
-import java.util.concurrent.TimeUnit;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.kafka.core.KafkaTemplate;
-import org.springframework.kafka.support.KafkaHeaders;
-import org.springframework.messaging.Message;
-import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.support.TransactionSynchronization;
-import org.springframework.transaction.support.TransactionSynchronizationManager;
 
+/**
+ * NO-OP EventPublisher — active while Kafka is disabled (REST mode).
+ *
+ * <p>All publish calls are silently swallowed and logged at DEBUG level
+ * so that the rest of the codebase compiles and runs without changes.
+ *
+ * <p>To re-enable Kafka:
+ * <ol>
+ *   <li>Restore KafkaProducerConfig, KafkaConsumerConfig, KafkaTopicConfig.</li>
+ *   <li>Replace this file with the original KafkaTemplate-backed implementation.</li>
+ * </ol>
+ */
 @Slf4j
 @Component
-@RequiredArgsConstructor
 public class EventPublisher {
 
-    private final KafkaTemplate<String, Object> kafkaTemplate;
-    private final CorrelationIdProvider correlationIdProvider;
-
+    /**
+     * No-op — event is logged and discarded.
+     * In Kafka mode this sends the event to the given topic immediately.
+     */
     public void publish(String topic, Object event) {
-        String correlationId = correlationIdProvider.currentOrGenerate();
-        long start = System.nanoTime();
-
-        Message<Object> message = MessageBuilder.withPayload(event)
-                .setHeader(KafkaHeaders.TOPIC, topic)
-                .setHeader(CorrelationIdProvider.HEADER_NAME, correlationId)
-                .build();
-
-        kafkaTemplate.send(message).whenComplete((result, ex) -> {
-            long durationMs = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - start);
-            String eventType = event.getClass().getSimpleName();
-            if (ex == null) {
-                log.info("Event published topic={} eventType={} durationMs={} correlationId={}",
-                        topic, eventType, durationMs, correlationId);
-            } else {
-                log.error("Event publish failed topic={} eventType={} durationMs={} correlationId={}",
-                        topic, eventType, durationMs, correlationId, ex);
-            }
-        });
+        log.debug("[REST-MODE] Skipping Kafka publish — topic={} eventType={}",
+                topic, event.getClass().getSimpleName());
     }
 
+    /**
+     * No-op — event is logged and discarded.
+     * In Kafka mode this sends the event after the current transaction commits.
+     */
     public void publishAfterCommit(String topic, Object event) {
-        if (!TransactionSynchronizationManager.isActualTransactionActive()) {
-            publish(topic, event);
-            return;
-        }
-        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
-            @Override
-            public void afterCommit() {
-                publish(topic, event);
-            }
-        });
+        log.debug("[REST-MODE] Skipping Kafka publishAfterCommit — topic={} eventType={}",
+                topic, event.getClass().getSimpleName());
     }
 }

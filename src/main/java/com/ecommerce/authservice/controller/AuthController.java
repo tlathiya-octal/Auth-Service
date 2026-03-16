@@ -20,9 +20,9 @@ public class AuthController {
     private final OtpService otpService;
 
     @PostMapping("/register")
-    public ResponseEntity<RegisterResponse> register(@Valid @RequestBody RegisterRequest request) {
-        RegisterResponse response = authService.register(request);
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    public RegisterResponse register(@Valid @RequestBody RegisterRequest request) {
+        //        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+        return authService.register(request);
     }
 
     @PostMapping("/login")

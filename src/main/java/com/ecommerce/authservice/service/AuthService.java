@@ -1,5 +1,6 @@
 package com.ecommerce.authservice.service;
 
+import com.ecommerce.authservice.client.UserServiceClient;
 import com.ecommerce.authservice.config.KafkaTopicsProperties;
 import com.ecommerce.authservice.dto.*;
 import com.ecommerce.authservice.entity.*;
@@ -36,8 +37,9 @@ public class AuthService {
     private final RefreshTokenService refreshTokenService;
     private final LoginAttemptService loginAttemptService;
     private final JwtBlacklistService jwtBlacklistService;
-    private final EventPublisher eventPublisher;
+    private final EventPublisher eventPublisher;          // no-op in REST mode
     private final KafkaTopicsProperties kafkaTopicsProperties;
+    private final UserServiceClient userServiceClient;   // REST-mode: sync profile creation
 
     @Transactional
     public RegisterResponse register(RegisterRequest request) {
@@ -79,6 +81,19 @@ public class AuthService {
                 .build();
         userRoleRepository.save(userRole);
 
+        // ── REST-mode: synchronously propagate profile to User Service ──────────
+        // This replaces the Kafka UserCreatedEvent. The call is fire-and-continue:
+        // a failure here does NOT roll back the auth registration.
+        UserProfileRequest profileRequest = new UserProfileRequest(
+                savedUser.getId(),
+                savedUser.getEmail(),
+                request.getFirstName(),
+                request.getLastName(),
+                savedUser.getPhone()
+        );
+        userServiceClient.createUserProfile(profileRequest);
+
+        // ── Kafka no-op (preserved for easy re-enable) ───────────────────────────
         UserCreatedEvent event = new UserCreatedEvent(
                 savedUser.getId(),
                 savedUser.getEmail(),

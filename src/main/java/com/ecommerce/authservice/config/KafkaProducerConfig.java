@@ -1,5 +1,11 @@
 package com.ecommerce.authservice.config;
 
+// ============================================================
+// KAFKA PRODUCER — TEMPORARILY DISABLED (REST mode active)
+// Uncomment this entire class to re-enable Kafka publishing.
+// ============================================================
+
+/*
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.StringSerializer;
@@ -28,4 +34,9 @@ public class KafkaProducerConfig {
     public KafkaTemplate<String, Object> kafkaTemplate(ProducerFactory<String, Object> producerFactory) {
         return new KafkaTemplate<>(producerFactory);
     }
+}
+*/
+
+// Empty placeholder — required to keep the package valid.
+public class KafkaProducerConfig {
 }

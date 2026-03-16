@@ -1,5 +1,11 @@
 package com.ecommerce.authservice.config;
 
+// ============================================================
+// KAFKA TOPIC CONFIG — TEMPORARILY DISABLED (REST mode active)
+// Uncomment this entire class to re-enable Kafka topic creation.
+// ============================================================
+
+/*
 import org.apache.kafka.clients.admin.NewTopic;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -39,4 +45,9 @@ public class KafkaTopicConfig {
                 .replicas(1)
                 .build();
     }
+}
+*/
+
+// Empty placeholder — required to keep the package valid.
+public class KafkaTopicConfig {
 }
