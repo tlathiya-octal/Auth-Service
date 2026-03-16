@@ -4,10 +4,12 @@ import com.ecommerce.authservice.dto.*;
 import com.ecommerce.authservice.exception.AuthException;
 import com.ecommerce.authservice.service.AuthService;
 import com.ecommerce.authservice.service.OtpService;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -20,14 +22,15 @@ public class AuthController {
     private final OtpService otpService;
 
     @PostMapping("/register")
-    public RegisterResponse register(@Valid @RequestBody RegisterRequest request) {
-        //        return ResponseEntity.status(HttpStatus.CREATED).body(response);
-        return authService.register(request);
+    public ResponseEntity<RegisterResponse> register(@Valid @RequestBody RegisterRequest request, HttpServletRequest httpRequest) {
+        RegisterResponse response = authService.register(request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @PostMapping("/login")
-    public AuthResponse login(@Valid @RequestBody LoginRequest request) {
-        return authService.login(request);
+    public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest request) {
+        AuthResponse response = authService.login(request);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
     @PostMapping("/refresh")
