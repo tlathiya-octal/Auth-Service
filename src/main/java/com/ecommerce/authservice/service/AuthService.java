@@ -150,24 +150,35 @@ public class AuthService {
                 .build();
     }
 
-    public AuthResponse refresh(RefreshTokenRequest request) {
-        RefreshToken refreshTokenEntity = refreshTokenService.rotateRefreshToken(request.getRefreshToken());
-        User user = refreshTokenEntity.getUser();
+	public AuthResponse refresh(RefreshTokenRequest request) {
+		try {
 
-        List<String> roles = user.getRoles().stream()
-                .map(userRole -> userRole.getRole().getName().name())
-                .toList();
+			RefreshToken refreshTokenEntity = refreshTokenService.rotateRefreshToken(request.getRefreshToken());
+//        User user = refreshTokenEntity.getUser();
 
-        JwtToken accessToken = jwtService.generateAccessToken(user.getId().toString(), user.getEmail(), roles);
-        String newRefreshToken = refreshTokenEntity.getToken();
+			User user = userRepository.findByEmailWithRoles(refreshTokenEntity.getUser().getEmail())
+					.orElseThrow(() -> new RuntimeException("User not found"));
 
-        return AuthResponse.builder()
-                .accessToken(accessToken.token())
-                .refreshToken(newRefreshToken)
-                .tokenType("Bearer")
-                .accessTokenExpiresAt(accessToken.expiresAt())
-                .build();
-    }
+			List<String> roles = user.getRoles().stream()
+					.map(userRole -> userRole.getRole().getName()
+							.name()).toList();
+
+			JwtToken accessToken = jwtService.generateAccessToken(user.getId().toString(), user.getEmail(), roles);
+			String newRefreshToken = refreshTokenEntity.getToken();
+
+			AuthResponse authres = AuthResponse.builder()
+					.accessToken(accessToken.token())
+					.refreshToken(newRefreshToken)
+					.tokenType("Bearer")
+					.accessTokenExpiresAt(accessToken.expiresAt())
+					.build();
+
+			return authres;
+		} catch (Exception ex) {
+			log.error("Error while refreshing the token:- " + ex);
+			throw new AuthException(HttpStatus.INTERNAL_SERVER_ERROR, ex.getMessage());
+		}
+	}
 
     public void logout(String refreshToken, String accessToken) {
         if (refreshToken != null && !refreshToken.isBlank()) {

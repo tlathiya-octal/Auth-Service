@@ -3,6 +3,7 @@ package com.ecommerce.authservice.repository;
 import com.ecommerce.authservice.entity.User;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -17,4 +18,12 @@ public interface UserRepository extends JpaRepository<User, UUID> {
 
     @EntityGraph(attributePaths = {"roles", "roles.role"})
     Optional<User> findWithRolesById(UUID id);
+    
+    @Query("""
+    	    SELECT u FROM User u
+    	    JOIN FETCH u.roles ur
+    	    JOIN FETCH ur.role
+    	    WHERE u.email = :email
+    	""")
+    Optional<User> findByEmailWithRoles(String email);
 }
