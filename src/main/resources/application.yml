@@ -31,11 +31,23 @@ app:
     user-service:
       base-url: ${USER_SERVICE_URL:http://localhost:8082}
 
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+
 jwt:
   issuer: ecommerce-auth-service
   secret: mySuperSecretJwtKey12345678901234567890
   access-token-expiration-minutes: 15
   refresh-token-expiration-days: 7
+
+springdoc:
+  api-docs:
+    path: /auth/v3/api-docs
+  swagger-ui:
+    path: /auth/swagger-ui.html
 
 logging:
   level:
